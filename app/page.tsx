@@ -1,65 +1,266 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { motion, AnimatePresence } from "framer-motion";
+import { PinInput } from "@/components/pin-input";
+import { Button } from "@/components/ui/button";
+import { Loader2, AlertCircle, Shield, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
+
+export default function HomePage() {
+  const router = useRouter();
+  const [pin, setPin] = useState("");
+  const [submittedPin, setSubmittedPin] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [shakeKey, setShakeKey] = useState(0);
+
+  const user = useQuery(
+    api.users.getUserByPin,
+    submittedPin !== null ? { pin: submittedPin } : "skip"
+  );
+
+  const isLoading = submittedPin !== null && user === undefined;
+
+  function handleSubmit() {
+    if (pin.length < 6) return;
+    setError("");
+    setSubmittedPin(pin);
+  }
+
+  if (submittedPin !== null && user !== undefined) {
+    if (user === null) {
+      if (!error) {
+        setError("Invalid PIN. Please try again.");
+        setShakeKey((k) => k + 1);
+        setPin("");
+        setSubmittedPin(null);
+      }
+    } else {
+      localStorage.setItem("userId", user._id);
+      localStorage.setItem("userName", user.name);
+      router.push("/member");
+    }
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="min-h-screen relative flex flex-col items-center justify-center p-4 overflow-hidden mesh-bg">
+
+      {/* Animated background orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
+        <motion.div
+          className="absolute -top-32 -left-32 w-96 h-96 rounded-full"
+          style={{
+            background: "radial-gradient(circle, oklch(0.75 0.18 150 / 35%) 0%, transparent 70%)",
+          }}
+          animate={{ scale: [1, 1.15, 1], rotate: [0, 90, 0] }}
+          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+        <motion.div
+          className="absolute -bottom-40 -right-40 w-md h-112 rounded-full"
+          style={{
+            background: "radial-gradient(circle, oklch(0.70 0.16 165 / 30%) 0%, transparent 70%)",
+          }}
+          animate={{ scale: [1, 1.2, 1], rotate: [0, -120, 0] }}
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        />
+        <motion.div
+          className="absolute top-1/2 left-1/3 w-64 h-64 rounded-full"
+          style={{
+            background: "radial-gradient(circle, oklch(0.80 0.12 175 / 25%) 0%, transparent 70%)",
+          }}
+          animate={{ scale: [1, 1.3, 1], x: [-20, 20, -20], y: [-15, 15, -15] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        />
+        <motion.div
+          className="absolute top-20 right-20 w-48 h-48 rounded-full"
+          style={{
+            background: "radial-gradient(circle, oklch(0.72 0.20 145 / 28%) 0%, transparent 70%)",
+          }}
+          animate={{ scale: [1, 1.25, 1], rotate: [0, 180, 0] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 3 }}
+        />
+
+        {/* Floating sparkle dots */}
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1.5 h-1.5 rounded-full bg-emerald-400/40"
+            style={{
+              left: `${15 + i * 14}%`,
+              top: `${20 + (i % 3) * 25}%`,
+            }}
+            animate={{ y: [-10, 10, -10], opacity: [0.3, 0.8, 0.3] }}
+            transition={{ duration: 3 + i * 0.5, repeat: Infinity, ease: "easeInOut", delay: i * 0.4 }}
+          />
+        ))}
+      </div>
+
+      {/* Theme toggle */}
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle />
+      </div>
+
+      {/* Floating badge above card */}
+      <motion.div
+        initial={{ opacity: 0, y: -16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+        className="mb-6 z-10"
+      >
+        <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 shadow-sm">
+          <Sparkles className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+          <span className="text-xs font-semibold text-green-700 dark:text-green-400 tracking-wide uppercase">
+            Staff Cooperative Society
+          </span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </motion.div>
+
+      {/* Main card */}
+      <motion.div
+        initial={{ opacity: 0, y: 32, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-md z-10"
+      >
+        <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-green-500/10 dark:shadow-green-400/5 gradient-border">
+          {/* Card gradient top accent */}
+          <div className="h-1 w-full bg-linear-to-r from-green-400 via-emerald-500 to-teal-500" />
+
+          {/* Card inner glow */}
+          <div className="absolute inset-0 bg-linear-to-b from-green-50/50 to-transparent dark:from-green-900/10 pointer-events-none" />
+
+          <div className="relative px-5 pt-8 pb-8 sm:px-8 sm:pt-10 sm:pb-10">
+            {/* Logo */}
+            <div className="flex justify-center mb-6">
+              <motion.div
+                initial={{ scale: 0, rotate: -30 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.2 }}
+                className="relative"
+              >
+                <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-green-400 via-emerald-500 to-teal-600 flex items-center justify-center shadow-xl shadow-green-500/30">
+                  <Shield className="w-10 h-10 text-white" strokeWidth={1.5} />
+                </div>
+                <motion.div
+                  className="absolute -inset-1 rounded-2xl bg-linear-to-br from-green-400 to-teal-500 blur-lg opacity-40"
+                  animate={{ opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                />
+                <motion.div
+                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-emerald-400 border-2 border-white dark:border-card flex items-center justify-center"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                </motion.div>
+              </motion.div>
+            </div>
+
+            {/* Heading */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+              className="text-center mb-8"
+            >
+              <h1 className="text-3xl font-bold tracking-tight shimmer-text">
+                NFVCB COOPERATIVE
+              </h1>
+              <p className="text-muted-foreground text-sm mt-2">
+                Enter your 6-digit PIN to access your account
+              </p>
+            </motion.div>
+
+            {/* PIN input */}
+            <div className="space-y-5">
+              <motion.div
+                key={shakeKey}
+                animate={error ? { x: [0, -10, 10, -10, 10, -6, 6, 0] } : { x: 0 }}
+                transition={{ duration: 0.4 }}
+              >
+                <PinInput
+                  value={pin}
+                  onChange={(v) => {
+                    setPin(v);
+                    setError("");
+                    if (v.length === 6) {
+                      setSubmittedPin(v);
+                    }
+                  }}
+                  disabled={isLoading}
+                  hasError={!!error}
+                />
+              </motion.div>
+
+              <AnimatePresence>
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: "auto" }}
+                    exit={{ opacity: 0, y: -8, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex items-center gap-2 text-red-500 text-sm bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl px-4 py-3">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      {error}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45 }}
+              >
+                <Button
+                  className="w-full h-12 text-base font-semibold rounded-xl bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg shadow-green-500/25 hover:shadow-green-500/40 transition-all duration-200 hover:scale-[1.01]"
+                  disabled={pin.length < 6 || isLoading}
+                  onClick={handleSubmit}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Verifying…
+                    </>
+                  ) : (
+                    "Continue →"
+                  )}
+                </Button>
+              </motion.div>
+
+              {/* <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.55 }}
+                className="text-center text-sm text-muted-foreground"
+              >
+                Admin?{" "}
+                <Link
+                  href="/dashboard"
+                  className="text-green-600 dark:text-green-400 hover:text-green-700 font-semibold underline-offset-4 hover:underline transition-colors"
+                >
+                  Sign in here
+                </Link>
+              </motion.p> */}
+            </div>
+          </div>
         </div>
-      </main>
+      </motion.div>
+
+      {/* Bottom tagline */}
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.7 }}
+        className="mt-8 text-xs text-muted-foreground/60 z-10 text-center"
+      >
+        National Film and Video Censors Board · Cooperative Society
+      </motion.p>
     </div>
   );
 }
