@@ -155,132 +155,120 @@ export function CoreLoansTab({ adminName }: CoreLoansTabProps) {
       </div>
 
       {loans === undefined || users === undefined ? (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-16 w-full" />
+            <Skeleton key={i} className="h-32 w-full rounded-xl" />
           ))}
         </div>
+      ) : filtered.length === 0 ? (
+        <p className="text-center py-8 text-muted-foreground text-sm">
+          No core loans found
+        </p>
       ) : (
-        <div className="rounded-xl border overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-muted/50 border-b">
-                  {[
-                    "Member",
-                    "Amount Req.",
-                    "Approved",
-                    "Expiry",
-                    "Applied",
-                    "Status",
-                    "Actions",
-                  ].map((h) => (
-                    <th
-                      key={h}
-                      className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs whitespace-nowrap"
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={7}
-                      className="text-center py-8 text-muted-foreground"
-                    >
-                      No core loans found
-                    </td>
-                  </tr>
-                ) : (
-                  filtered.map((loan) => (
-                    <tr
-                      key={loan._id}
-                      className="border-b last:border-0 hover:bg-muted/30 transition-colors"
-                    >
-                      <td className="px-4 py-3 font-medium whitespace-nowrap">
-                        {usersMap[loan.userId]?.name ?? "Unknown"}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {formatNaira(loan.amountRequested)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {loan.amountApproved > 0
-                          ? formatNaira(loan.amountApproved)
-                          : "—"}
-                      </td>
-                      <td
-                        className={`px-4 py-3 whitespace-nowrap text-sm ${expiryColorClass(loan.expiryDate)}`}
-                      >
-                        {formatExpiry(loan.expiryDate)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {formatDate(loan.dateApplied)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <Badge className={getStatusColor(loan.status)}>
-                          {loan.status}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex gap-1.5 flex-wrap">
-                          {loan.status === "awaiting-approval" && (
-                            <>
-                              <Button
-                                size="sm"
-                                className="bg-green-600 hover:bg-green-700 text-white h-7 text-xs"
-                                onClick={() => {
-                                  setApproveTarget(loan);
-                                  setApproveForm({
-                                    amount:
-                                      loan.amountRequested.toString(),
-                                    rate: "10",
-                                  });
-                                }}
-                              >
-                                <CheckCircle className="w-3 h-3 mr-1" />
-                                Approve
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                className="h-7 text-xs"
-                                onClick={() => setRejectTarget(loan._id)}
-                              >
-                                <XCircle className="w-3 h-3 mr-1" />
-                                Reject
-                              </Button>
-                            </>
-                          )}
-                          {loan.status === "approved" && (
-                            <Button
-                              size="sm"
-                              className="bg-emerald-600 hover:bg-emerald-700 text-white h-7 text-xs"
-                              onClick={() => setClearTarget(loan._id)}
-                            >
-                              <BadgeCheck className="w-3 h-3 mr-1" />
-                              Mark Repaid
-                            </Button>
-                          )}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 text-xs"
-                            onClick={() => downloadPDF(loan)}
-                          >
-                            <Download className="w-3 h-3 mr-1" />
-                            PDF
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          {filtered.map((loan) => (
+            <div
+              key={loan._id}
+              className="rounded-xl border bg-card p-4 space-y-3"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <p className="font-semibold leading-tight">
+                  {usersMap[loan.userId]?.name ?? "Unknown"}
+                </p>
+                <Badge className={getStatusColor(loan.status)}>
+                  {loan.status}
+                </Badge>
+              </div>
+              <div className="text-sm flex flex-wrap gap-x-4 gap-y-1">
+                <span>
+                  <span className="text-muted-foreground">Requested: </span>
+                  {formatNaira(loan.amountRequested)}
+                </span>
+                <span>
+                  <span className="text-muted-foreground">Approved: </span>
+                  {loan.amountApproved && loan.amountApproved > 0
+                    ? formatNaira(loan.amountApproved)
+                    : "—"}
+                </span>
+                <span>
+                  <span className="text-muted-foreground">Applied: </span>
+                  {formatDate(loan.dateApplied)}
+                </span>
+                {loan.expiryDate && (
+                  <span className={expiryColorClass(loan.expiryDate)}>
+                    <span className="text-muted-foreground">Expiry: </span>
+                    {formatExpiry(loan.expiryDate)}
+                  </span>
                 )}
-              </tbody>
-            </table>
-          </div>
+                {loan.approvedByAdmin && (
+                  <span>
+                    <span className="text-muted-foreground">Approved by: </span>
+                    {loan.approvedByAdmin}
+                  </span>
+                )}
+                {loan.rejectedByAdmin && (
+                  <span>
+                    <span className="text-muted-foreground">Rejected by: </span>
+                    {loan.rejectedByAdmin}
+                  </span>
+                )}
+                {loan.clearedByAdmin && (
+                  <span>
+                    <span className="text-muted-foreground">Cleared by: </span>
+                    {loan.clearedByAdmin}
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                {loan.status === "awaiting-approval" && (
+                  <>
+                    <Button
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700 text-white flex-1 sm:flex-none"
+                      onClick={() => {
+                        setApproveTarget(loan);
+                        setApproveForm({
+                          amount: loan.amountRequested.toString(),
+                          rate: "10",
+                        });
+                      }}
+                    >
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Approve
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="flex-1 sm:flex-none"
+                      onClick={() => setRejectTarget(loan._id)}
+                    >
+                      <XCircle className="w-3 h-3 mr-1" />
+                      Reject
+                    </Button>
+                  </>
+                )}
+                {loan.status === "approved" && (
+                  <Button
+                    size="sm"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white flex-1 sm:flex-none"
+                    onClick={() => setClearTarget(loan._id)}
+                  >
+                    <BadgeCheck className="w-3 h-3 mr-1" />
+                    Mark Repaid
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-1 sm:flex-none"
+                  onClick={() => downloadPDF(loan)}
+                >
+                  <Download className="w-3 h-3 mr-1" />
+                  PDF
+                </Button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

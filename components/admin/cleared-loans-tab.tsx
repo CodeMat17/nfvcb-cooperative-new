@@ -27,7 +27,7 @@ export function ClearedLoansTab() {
   const cleared = [
     ...((filter === "all" || filter === "quick")
       ? (quickLoans ?? [])
-          .filter((l) => l.status === "cleared")
+          .filter((l) => l.status === "repaid")
           .map((l) => ({
             id: l._id,
             userId: l.userId,
@@ -35,12 +35,13 @@ export function ClearedLoansTab() {
             amount: l.amount,
             dateApproved: l.dateApproved,
             dateCleared: l.clearedDate,
+            approvedBy: l.approvedByAdmin,
             clearedBy: l.clearedByAdmin,
           }))
       : []),
     ...((filter === "all" || filter === "core")
       ? (coreLoans ?? [])
-          .filter((l) => l.status === "cleared")
+          .filter((l) => l.status === "repaid")
           .map((l) => ({
             id: l._id,
             userId: l.userId,
@@ -48,6 +49,7 @@ export function ClearedLoansTab() {
             amount: l.amountApproved || l.amountRequested,
             dateApproved: l.dateApproved,
             dateCleared: l.clearedDate,
+            approvedBy: l.approvedByAdmin,
             clearedBy: l.clearedByAdmin,
           }))
       : []),
@@ -96,80 +98,62 @@ export function ClearedLoansTab() {
       </div>
 
       {isLoading ? (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-16 w-full" />
+            <Skeleton key={i} className="h-28 w-full rounded-xl" />
           ))}
         </div>
+      ) : cleared.length === 0 ? (
+        <p className="text-center py-8 text-muted-foreground text-sm">
+          No cleared loans
+        </p>
       ) : (
-        <div className="rounded-xl border overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-muted/50 border-b">
-                  {[
-                    "Member",
-                    "Type",
-                    "Amount",
-                    "Date Approved",
-                    "Date Cleared",
-                    "Cleared By",
-                  ].map((h) => (
-                    <th
-                      key={h}
-                      className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs whitespace-nowrap"
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {cleared.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      className="text-center py-8 text-muted-foreground"
-                    >
-                      No cleared loans
-                    </td>
-                  </tr>
-                ) : (
-                  cleared.map((loan) => (
-                    <tr
-                      key={loan.id}
-                      className="border-b last:border-0 hover:bg-muted/30 transition-colors"
-                    >
-                      <td className="px-4 py-3 font-medium">
-                        {usersMap[loan.userId] ?? "Unknown"}
-                      </td>
-                      <td className="px-4 py-3">
-                        <Badge
-                          className={
-                            loan.type === "Quick"
-                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                              : "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400"
-                          }
-                        >
-                          {loan.type}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {formatNaira(loan.amount)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {formatDate(loan.dateApproved)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {formatDate(loan.dateCleared)}
-                      </td>
-                      <td className="px-4 py-3">{loan.clearedBy ?? "—"}</td>
-                    </tr>
-                  ))
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          {cleared.map((loan) => (
+            <div
+              key={loan.id}
+              className="rounded-xl border bg-card p-4 space-y-3"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <p className="font-semibold leading-tight">
+                  {usersMap[loan.userId] ?? "Unknown"}
+                </p>
+                <Badge
+                  className={
+                    loan.type === "Quick"
+                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                      : "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400"
+                  }
+                >
+                  {loan.type}
+                </Badge>
+              </div>
+              <div className="text-sm flex flex-wrap gap-x-4 gap-y-1">
+                <span>
+                  <span className="text-muted-foreground">Amount: </span>
+                  {formatNaira(loan.amount)}
+                </span>
+                <span>
+                  <span className="text-muted-foreground">Approved: </span>
+                  {formatDate(loan.dateApproved)}
+                </span>
+                <span>
+                  <span className="text-muted-foreground">Cleared: </span>
+                  {formatDate(loan.dateCleared)}
+                </span>
+                {loan.approvedBy && (
+                  <span>
+                    <span className="text-muted-foreground">Approved by: </span>
+                    {loan.approvedBy}
+                  </span>
                 )}
-              </tbody>
-            </table>
-          </div>
+                <span>
+                  <span className="text-muted-foreground">Cleared by: </span>
+                  {loan.clearedBy ?? "—"}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

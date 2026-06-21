@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import {
   Sheet,
@@ -37,6 +37,16 @@ export function AddMemberSheet({ open, onOpenChange }: AddMemberSheetProps) {
   const [calOpen, setCalOpen] = useState(false);
 
   const addUser = useMutation(api.users.addUser);
+  const existingPins = useQuery(api.users.getAllPins) ?? [];
+  const existingPinSet = new Set(existingPins);
+
+  function generateUniquePin(taken: Set<string>): string {
+    let pin: string;
+    do {
+      pin = String(Math.floor(100000 + Math.random() * 900000));
+    } while (taken.has(pin));
+    return pin;
+  }
 
   function update(k: keyof typeof form, v: string) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -46,7 +56,7 @@ export function AddMemberSheet({ open, onOpenChange }: AddMemberSheetProps) {
     return (
       form.name &&
       form.ippis &&
-      form.pin.length === 6 &&
+      form.pin.length === 6 && !existingPinSet.has(form.pin) &&
       form.monthlyContribution &&
       form.totalContribution &&
       form.dateJoined
@@ -109,13 +119,25 @@ export function AddMemberSheet({ open, onOpenChange }: AddMemberSheetProps) {
 
           <div className="space-y-2">
             <Label>6-Digit PIN</Label>
-            <Input
-              type="password"
-              placeholder="6-digit PIN"
-              maxLength={6}
-              value={form.pin}
-              onChange={(e) => update("pin", e.target.value.replace(/\D/g, ""))}
-            />
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="6-digit PIN"
+                maxLength={6}
+                value={form.pin}
+                onChange={(e) => update("pin", e.target.value.replace(/\D/g, ""))}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => update("pin", generateUniquePin(existingPinSet))}
+              >
+                Generate
+              </Button>
+            </div>
+            {form.pin.length === 6 && existingPinSet.has(form.pin) && (
+              <p className="text-sm text-red-500">PIN already in use</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">

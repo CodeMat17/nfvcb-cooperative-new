@@ -55,7 +55,10 @@ export function ApplyQuickLoanSheet({
     setLoading(true);
     try {
       await applyLoan({ userId, amount });
-      toast.success("Loan application submitted successfully!");
+      toast.success("Loan application submitted!", {
+        description: "Your quick loan request has been received. The admin will review and consider your application.",
+        duration: 6000,
+      });
       onOpenChange(false);
       setAmount(null);
       setPin("");
@@ -74,7 +77,7 @@ export function ApplyQuickLoanSheet({
           <SheetTitle>Apply for Quick Loan</SheetTitle>
         </SheetHeader>
 
-        <div className="px-6 space-y-6">
+        <div className="px-6 pb-8 space-y-6">
           <div className="rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 p-4 space-y-2">
             <p className="text-sm font-semibold text-amber-800 dark:text-amber-400 mb-1">
               Terms & Conditions

@@ -189,7 +189,10 @@ export function ApplyCoreLoanSheet({
         guarantor2Name: form.guarantor2.name,
         guarantor2Phone: form.guarantor2.phone,
       });
-      toast.success("Core loan application submitted successfully!");
+      toast.success("Loan application submitted!", {
+        description: "Your core loan request has been received. The admin will review and consider your application.",
+        duration: 6000,
+      });
       onOpenChange(false);
       setStep(1);
       setForm({

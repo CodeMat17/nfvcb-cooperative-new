@@ -98,136 +98,129 @@ export function QuickLoansTab({ adminName }: QuickLoansTabProps) {
       </div>
 
       {loans === undefined || users === undefined ? (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-16 w-full" />
+            <Skeleton key={i} className="h-32 w-full rounded-xl" />
           ))}
         </div>
+      ) : filtered.length === 0 ? (
+        <p className="text-center py-8 text-muted-foreground text-sm">
+          No quick loans found
+        </p>
       ) : (
-        <div className="rounded-xl border overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-muted/50 border-b">
-                  {[
-                    "Member",
-                    "Amount",
-                    "Applied",
-                    "Approved",
-                    "Expiry",
-                    "Disbursed",
-                    "Status",
-                    "Actions",
-                  ].map((h) => (
-                    <th
-                      key={h}
-                      className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs whitespace-nowrap"
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={8}
-                      className="text-center py-8 text-muted-foreground"
-                    >
-                      No quick loans found
-                    </td>
-                  </tr>
-                ) : (
-                  filtered.map((loan) => (
-                    <tr
-                      key={loan._id}
-                      className="border-b last:border-0 hover:bg-muted/30 transition-colors"
-                    >
-                      <td className="px-4 py-3 font-medium whitespace-nowrap">
-                        {usersMap[loan.userId] ?? "Unknown"}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {formatNaira(loan.amount)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {formatDate(loan.dateApplied)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {formatDate(loan.dateApproved)}
-                      </td>
-                      <td
-                        className={`px-4 py-3 whitespace-nowrap text-sm ${expiryColorClass(loan.expiryDate)}`}
-                      >
-                        {formatExpiry(loan.expiryDate)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {formatDate(loan.dateDisbursed)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <Badge className={getStatusColor(loan.status)}>
-                          {loan.status}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex gap-1.5">
-                          {loan.status === "awaiting-approval" && (
-                            <>
-                              <Button
-                                size="sm"
-                                className="bg-green-600 hover:bg-green-700 text-white h-7 text-xs"
-                                onClick={() =>
-                                  setAction({
-                                    type: "approve",
-                                    loanId: loan._id,
-                                    label: `Approve ₦${loan.amount.toLocaleString()} quick loan for ${usersMap[loan.userId]}?`,
-                                  })
-                                }
-                              >
-                                <CheckCircle className="w-3 h-3 mr-1" />
-                                Approve
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                className="h-7 text-xs"
-                                onClick={() =>
-                                  setAction({
-                                    type: "reject",
-                                    loanId: loan._id,
-                                    label: `Reject quick loan for ${usersMap[loan.userId]}?`,
-                                  })
-                                }
-                              >
-                                <XCircle className="w-3 h-3 mr-1" />
-                                Reject
-                              </Button>
-                            </>
-                          )}
-                          {loan.status === "approved" && (
-                            <Button
-                              size="sm"
-                              className="bg-emerald-600 hover:bg-emerald-700 text-white h-7 text-xs"
-                              onClick={() =>
-                                setAction({
-                                  type: "repaid",
-                                  loanId: loan._id,
-                                  label: `Mark loan for ${usersMap[loan.userId]} as repaid?`,
-                                })
-                              }
-                            >
-                              <BadgeCheck className="w-3 h-3 mr-1" />
-                              Mark Repaid
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          {filtered.map((loan) => (
+            <div
+              key={loan._id}
+              className="rounded-xl border bg-card p-4 space-y-3"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <p className="font-semibold leading-tight">
+                  {usersMap[loan.userId] ?? "Unknown"}
+                </p>
+                <Badge className={getStatusColor(loan.status)}>
+                  {loan.status}
+                </Badge>
+              </div>
+              <div className="text-sm flex flex-wrap gap-x-4 gap-y-1">
+                <span>
+                  <span className="text-muted-foreground">Amount: </span>
+                  {formatNaira(loan.amount)}
+                </span>
+                <span>
+                  <span className="text-muted-foreground">Applied: </span>
+                  {formatDate(loan.dateApplied)}
+                </span>
+                {loan.dateApproved && (
+                  <span>
+                    <span className="text-muted-foreground">Approved: </span>
+                    {formatDate(loan.dateApproved)}
+                  </span>
                 )}
-              </tbody>
-            </table>
-          </div>
+                {loan.dateDisbursed && (
+                  <span>
+                    <span className="text-muted-foreground">Disbursed: </span>
+                    {formatDate(loan.dateDisbursed)}
+                  </span>
+                )}
+                {loan.expiryDate && (
+                  <span className={expiryColorClass(loan.expiryDate)}>
+                    <span className="text-muted-foreground">Expiry: </span>
+                    {formatExpiry(loan.expiryDate)}
+                  </span>
+                )}
+                {loan.approvedByAdmin && (
+                  <span>
+                    <span className="text-muted-foreground">Approved by: </span>
+                    {loan.approvedByAdmin}
+                  </span>
+                )}
+                {loan.rejectedByAdmin && (
+                  <span>
+                    <span className="text-muted-foreground">Rejected by: </span>
+                    {loan.rejectedByAdmin}
+                  </span>
+                )}
+                {loan.clearedByAdmin && (
+                  <span>
+                    <span className="text-muted-foreground">Cleared by: </span>
+                    {loan.clearedByAdmin}
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                {loan.status === "awaiting-approval" && (
+                  <>
+                    <Button
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700 text-white flex-1 sm:flex-none"
+                      onClick={() =>
+                        setAction({
+                          type: "approve",
+                          loanId: loan._id,
+                          label: `Approve ₦${loan.amount.toLocaleString()} quick loan for ${usersMap[loan.userId]}?`,
+                        })
+                      }
+                    >
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Approve
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="flex-1 sm:flex-none"
+                      onClick={() =>
+                        setAction({
+                          type: "reject",
+                          loanId: loan._id,
+                          label: `Reject quick loan for ${usersMap[loan.userId]}?`,
+                        })
+                      }
+                    >
+                      <XCircle className="w-3 h-3 mr-1" />
+                      Reject
+                    </Button>
+                  </>
+                )}
+                {loan.status === "approved" && (
+                  <Button
+                    size="sm"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white flex-1 sm:flex-none"
+                    onClick={() =>
+                      setAction({
+                        type: "repaid",
+                        loanId: loan._id,
+                        label: `Mark loan for ${usersMap[loan.userId]} as repaid?`,
+                      })
+                    }
+                  >
+                    <BadgeCheck className="w-3 h-3 mr-1" />
+                    Mark Repaid
+                  </Button>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

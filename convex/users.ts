@@ -33,6 +33,14 @@ export const verifyUserByPin = mutation({
 });
 
 
+export const getAllPins = query({
+  args: {},
+  handler: async (ctx) => {
+    const users = await ctx.db.query("users").collect();
+    return users.map((u) => u.pin);
+  },
+});
+
 export const getAllUsers = query({
   args: {},
   handler: async (ctx) => {
@@ -76,9 +84,10 @@ export const updateUserInfo = mutation({
     userId: v.id("users"),
     name: v.string(),
     pin: v.string(),
+    dateJoined: v.string(),
   },
-  handler: async (ctx, { userId, name, pin }) => {
-    await ctx.db.patch(userId, { name, pin });
+  handler: async (ctx, { userId, name, pin, dateJoined }) => {
+    await ctx.db.patch(userId, { name, pin, dateJoined });
   },
 });
 

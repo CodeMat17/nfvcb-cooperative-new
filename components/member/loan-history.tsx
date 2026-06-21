@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { History, FileX, ChevronLeft, ChevronRight } from "lucide-react";
+import { History, FileX } from "lucide-react";
 import { motion } from "framer-motion";
 import { formatNaira, formatDate, getStatusColor } from "@/lib/loan-utils";
 
@@ -30,52 +30,11 @@ function EmptyState({ label }: { label: string }) {
 
 const PAGE_SIZE = 10;
 
-function Paginator({
-  page,
-  totalPages,
-  onPrev,
-  onNext,
-}: {
-  page: number;
-  totalPages: number;
-  onPrev: () => void;
-  onNext: () => void;
-}) {
-  if (totalPages <= 1) return null;
-  return (
-    <div className="flex items-center justify-between pt-2">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onPrev}
-        disabled={page === 1}
-        className="h-8 px-3 text-xs gap-1"
-      >
-        <ChevronLeft className="w-3.5 h-3.5" />
-        Prev
-      </Button>
-      <span className="text-xs text-muted-foreground">
-        {page} / {totalPages}
-      </span>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onNext}
-        disabled={page === totalPages}
-        className="h-8 px-3 text-xs gap-1"
-      >
-        Next
-        <ChevronRight className="w-3.5 h-3.5" />
-      </Button>
-    </div>
-  );
-}
-
 export function LoanHistory({ userId }: LoanHistoryProps) {
   const quickLoans = useQuery(api.quickLoans.getUserQuickLoanHistory, { userId });
   const coreLoans = useQuery(api.coreLoans.getUserCoreLoanHistory, { userId });
-  const [quickPage, setQuickPage] = useState(1);
-  const [corePage, setCorePage] = useState(1);
+  const [quickVisible, setQuickVisible] = useState(PAGE_SIZE);
+  const [coreVisible, setCoreVisible] = useState(PAGE_SIZE);
 
   const sortedQuick = quickLoans
     ?.slice()
@@ -84,11 +43,8 @@ export function LoanHistory({ userId }: LoanHistoryProps) {
     ?.slice()
     .sort((a, b) => new Date(b.dateApplied).getTime() - new Date(a.dateApplied).getTime()) ?? [];
 
-  const quickTotalPages = Math.max(1, Math.ceil(sortedQuick.length / PAGE_SIZE));
-  const coreTotalPages = Math.max(1, Math.ceil(sortedCore.length / PAGE_SIZE));
-
-  const quickPageItems = sortedQuick.slice((quickPage - 1) * PAGE_SIZE, quickPage * PAGE_SIZE);
-  const corePageItems = sortedCore.slice((corePage - 1) * PAGE_SIZE, corePage * PAGE_SIZE);
+  const quickItems = sortedQuick.slice(0, quickVisible);
+  const coreItems = sortedCore.slice(0, coreVisible);
 
   return (
     <motion.div
@@ -136,7 +92,7 @@ export function LoanHistory({ userId }: LoanHistoryProps) {
             ) : (
               <>
                 <div className='space-y-2'>
-                  {quickPageItems.map((loan, i) => (
+                  {quickItems.map((loan, i) => (
                     <motion.div
                       key={loan._id}
                       initial={{ opacity: 0, x: -8 }}
@@ -147,7 +103,6 @@ export function LoanHistory({ userId }: LoanHistoryProps) {
                         <p className='font-bold text-sm'>
                           {formatNaira(loan.amount)}
                         </p>
-
                         <p className='text-xs text-muted-foreground'>
                           Applied: {formatDate(loan.dateApplied)}
                         </p>
@@ -164,12 +119,16 @@ export function LoanHistory({ userId }: LoanHistoryProps) {
                     </motion.div>
                   ))}
                 </div>
-                <Paginator
-                  page={quickPage}
-                  totalPages={quickTotalPages}
-                  onPrev={() => setQuickPage((p) => p - 1)}
-                  onNext={() => setQuickPage((p) => p + 1)}
-                />
+                {quickVisible < sortedQuick.length && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setQuickVisible((v) => v + PAGE_SIZE)}
+                    className="w-full mt-3 h-8 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Load more ({sortedQuick.length - quickVisible} remaining)
+                  </Button>
+                )}
               </>
             )}
           </TabsContent>
@@ -185,7 +144,7 @@ export function LoanHistory({ userId }: LoanHistoryProps) {
             ) : (
               <>
                 <div className='space-y-2'>
-                  {corePageItems.map((loan, i) => (
+                  {coreItems.map((loan, i) => (
                     <motion.div
                       key={loan._id}
                       initial={{ opacity: 0, x: -8 }}
@@ -218,12 +177,16 @@ export function LoanHistory({ userId }: LoanHistoryProps) {
                     </motion.div>
                   ))}
                 </div>
-                <Paginator
-                  page={corePage}
-                  totalPages={coreTotalPages}
-                  onPrev={() => setCorePage((p) => p - 1)}
-                  onNext={() => setCorePage((p) => p + 1)}
-                />
+                {coreVisible < sortedCore.length && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setCoreVisible((v) => v + PAGE_SIZE)}
+                    className="w-full mt-3 h-8 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Load more ({sortedCore.length - coreVisible} remaining)
+                  </Button>
+                )}
               </>
             )}
           </TabsContent>

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
-import { formatNaira, formatDate } from "@/lib/loan-utils";
+import { formatNaira, formatMonthYear } from "@/lib/loan-utils";
 import { Doc } from "@/convex/_generated/dataModel";
 
 interface MemberCardProps {
@@ -53,7 +53,7 @@ export function MemberCard({ user }: MemberCardProps) {
             </h2>
           </div>
           <Badge className="bg-white/10 text-white border-white/30 text-xs backdrop-blur-sm shrink-0">
-            Member since {formatDate(user.dateJoined)}
+            Member since {formatMonthYear(user.dateJoined)}
           </Badge>
         </motion.div>
 

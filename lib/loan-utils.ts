@@ -82,6 +82,11 @@ export function formatDate(dateStr?: string): string {
   return format(new Date(dateStr), "MMM dd, yyyy");
 }
 
+export function formatMonthYear(dateStr?: string): string {
+  if (!dateStr) return "—";
+  return format(new Date(dateStr), "MMM yyyy");
+}
+
 export function getStatusColor(
   status: "awaiting-approval" | "approved" | "rejected" | "repaid"
 ): string {

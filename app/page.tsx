@@ -4,19 +4,25 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useAuth } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
 import { PinInput } from "@/components/pin-input";
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertCircle, Shield, Sparkles } from "lucide-react";
-import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
+import Image from "next/image";
 
 export default function HomePage() {
   const router = useRouter();
+  const { isSignedIn } = useAuth();
   const [pin, setPin] = useState("");
   const [submittedPin, setSubmittedPin] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [shakeKey, setShakeKey] = useState(0);
+
+  function handleAdminClick() {
+    router.push(isSignedIn ? "/dashboard" : "/sign-in");
+  }
 
   const user = useQuery(
     api.users.getUserByPin,
@@ -142,21 +148,14 @@ export default function HomePage() {
                 transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.2 }}
                 className="relative"
               >
-                <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-green-400 via-emerald-500 to-teal-600 flex items-center justify-center shadow-xl shadow-green-500/30">
-                  <Shield className="w-10 h-10 text-white" strokeWidth={1.5} />
-                </div>
+              
+                <Image alt="logo" priority src="/logo.png" width={50} height={50} className="rounded shrink-0" />
                 <motion.div
                   className="absolute -inset-1 rounded-2xl bg-linear-to-br from-green-400 to-teal-500 blur-lg opacity-40"
                   animate={{ opacity: [0.3, 0.6, 0.3] }}
                   transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
                 />
-                <motion.div
-                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-emerald-400 border-2 border-white dark:border-card flex items-center justify-center"
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                </motion.div>
+              
               </motion.div>
             </div>
 
@@ -165,12 +164,12 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
-              className="text-center mb-8"
+              className="text-center mb-2"
             >
               <h1 className="text-3xl font-bold tracking-tight shimmer-text">
-                NFVCB COOPERATIVE
+                NFVCB COOPERATIVE CONTRIBUTIONS APP
               </h1>
-              <p className="text-muted-foreground text-sm mt-2">
+              <p className="text-muted-foreground text-sm mt-8">
                 Enter your 6-digit PIN to access your account
               </p>
             </motion.div>
@@ -233,20 +232,21 @@ export default function HomePage() {
                 </Button>
               </motion.div>
 
-              {/* <motion.p
+              <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.55 }}
                 className="text-center text-sm text-muted-foreground"
               >
                 Admin?{" "}
-                <Link
-                  href="/dashboard"
-                  className="text-green-600 dark:text-green-400 hover:text-green-700 font-semibold underline-offset-4 hover:underline transition-colors"
+                <button
+                  onClick={handleAdminClick}
+                  className="inline-flex items-center gap-1 text-green-600 dark:text-green-400 hover:text-green-700 font-semibold underline-offset-4 hover:underline transition-colors"
                 >
+                  <Shield className="w-3.5 h-3.5" />
                   Sign in here
-                </Link>
-              </motion.p> */}
+                </button>
+              </motion.p>
             </div>
           </div>
         </div>
