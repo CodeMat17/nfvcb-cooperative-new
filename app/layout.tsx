@@ -16,11 +16,11 @@ const nunito = Nunito({
 
 export const metadata: Metadata = {
   title: "NFVCB Staff Cooperative Society",
-  description: "Cooperative Society Management App for NFVCB Staff",
+  description: "Cooperative Contribution Management App for NFVCB Staff",
   robots: { index: false, follow: false },
   openGraph: {
     title: "NFVCB Staff Cooperative Society",
-    description: "Cooperative Society Management App for NFVCB Staff",
+    description: "Cooperative Contribution Management App for NFVCB Staff",
     images: [{ url: "/opengraph-image.jpg" }],
   },
 };
