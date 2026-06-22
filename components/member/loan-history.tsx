@@ -12,6 +12,16 @@ import { History, FileX } from "lucide-react";
 import { motion } from "framer-motion";
 import { formatNaira, formatDate, getStatusColor } from "@/lib/loan-utils";
 
+function repaidTiming(clearedDate: string, expiryDate?: string): string {
+  if (!expiryDate) return "";
+  const cleared = new Date(clearedDate).setHours(0, 0, 0, 0);
+  const expiry = new Date(expiryDate).setHours(0, 0, 0, 0);
+  const diffDays = Math.round((cleared - expiry) / (1000 * 60 * 60 * 24));
+  if (diffDays < 0) return `${Math.abs(diffDays)} day${Math.abs(diffDays) === 1 ? "" : "s"} before expiry`;
+  if (diffDays === 0) return "repaid on expiry date";
+  return `${diffDays} day${diffDays === 1 ? "" : "s"} after expiry`;
+}
+
 interface LoanHistoryProps {
   userId: Id<"users">;
 }
@@ -111,6 +121,16 @@ export function LoanHistory({ userId }: LoanHistoryProps) {
                             Approved: {formatDate(loan.dateApproved)}
                           </p>
                         )}
+                        {loan.clearedDate && (
+                          <p className='text-xs text-muted-foreground'>
+                            Repaid: {formatDate(loan.clearedDate)}
+                            {loan.expiryDate && (
+                              <span className='ml-1 text-muted-foreground/60'>
+                                ({repaidTiming(loan.clearedDate, loan.expiryDate)})
+                              </span>
+                            )}
+                          </p>
+                        )}
                       </div>
                       <Badge
                         className={`${getStatusColor(loan.status)} shrink-0 text-xs font-semibold`}>
@@ -167,6 +187,16 @@ export function LoanHistory({ userId }: LoanHistoryProps) {
                         {loan.dateApproved && (
                           <p className='text-xs text-muted-foreground'>
                             Approved: {formatDate(loan.dateApproved)}
+                          </p>
+                        )}
+                        {loan.clearedDate && (
+                          <p className='text-xs text-muted-foreground'>
+                            Repaid: {formatDate(loan.clearedDate)}
+                            {loan.expiryDate && (
+                              <span className='ml-1 text-muted-foreground/60'>
+                                ({repaidTiming(loan.clearedDate, loan.expiryDate)})
+                              </span>
+                            )}
                           </p>
                         )}
                       </div>
