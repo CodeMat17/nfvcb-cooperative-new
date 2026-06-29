@@ -8,11 +8,20 @@ import Image from "next/image";
 import { UserButton } from "@clerk/nextjs";
 import { Show } from "@clerk/nextjs";
 
+const ROLE_LABELS: Record<string, string> = {
+  "super-admin":     "Super Admin",
+  "members-admin":   "Members Admin",
+  "quickloan-admin": "Quickloan Admin",
+  "coreloan-admin":  "Coreloan Admin",
+};
+
 interface NavbarProps {
   isAdmin?: boolean;
+  adminRole?: string;
 }
 
-export function Navbar({ isAdmin }: NavbarProps) {
+export function Navbar({ isAdmin, adminRole }: NavbarProps) {
+  const badgeLabel = ROLE_LABELS[adminRole ?? ""] ?? "Admin";
   return (
     <header className='fixed top-0 left-0 right-0 z-50 h-14'>
       {/* Glassmorphism background */}
@@ -44,7 +53,7 @@ export function Navbar({ isAdmin }: NavbarProps) {
             </span>
             {isAdmin && (
               <Badge className='bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 text-xs font-semibold'>
-                Admin
+                {badgeLabel}
               </Badge>
             )}
           </div>

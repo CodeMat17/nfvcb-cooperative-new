@@ -13,6 +13,13 @@ import { LogOut, Users } from "lucide-react";
 import Link from "next/link";
 
 
+const TAB_ACCESS: Record<string, string[]> = {
+  "super-admin":     ["members", "quick", "core", "cleared"],
+  "members-admin":   ["members"],
+  "quickloan-admin": ["quick"],
+  "coreloan-admin":  ["core"],
+};
+
 export default function AdminPage() {
   const { user } = useUser();
   const adminName =
@@ -22,10 +29,14 @@ export default function AdminPage() {
       ? user.primaryEmailAddress.emailAddress.split("@")[0]
       : "Admin");
 
+  const role = (user?.publicMetadata?.role as string | undefined) ?? "";
+  const visibleTabs = TAB_ACCESS[role] ?? [];
+  const canApprove = role === "super-admin";
+  const defaultTab = visibleTabs[0] ?? "members";
 
   return (
     <div className='min-h-screen bg-background'>
-      <Navbar isAdmin />
+      <Navbar isAdmin adminRole={role} />
 
       <main className='pt-14'>
         <div className='max-w-7xl mx-auto px-4 py-6 space-y-6'>
@@ -46,34 +57,42 @@ export default function AdminPage() {
                   <span className='hidden sm:inline'>Member Portal</span>
                 </Button>
               </Link>
-             
+
             </div>
           </div>
 
           <StatsCards />
 
-          <Tabs defaultValue='members'>
+          <Tabs key={defaultTab} defaultValue={defaultTab}>
             <div className='overflow-x-auto -mx-4 px-4'>
               <TabsList className='w-max min-w-full sm:min-w-0 sm:w-auto'>
-                <TabsTrigger value='members'>Members</TabsTrigger>
-                <TabsTrigger value='quick'>Quick Loans</TabsTrigger>
-                <TabsTrigger value='core'>Core Loans</TabsTrigger>
-                <TabsTrigger value='cleared'>Cleared</TabsTrigger>
+                {visibleTabs.includes("members") && <TabsTrigger value='members'>Members</TabsTrigger>}
+                {visibleTabs.includes("quick") && <TabsTrigger value='quick'>Quick Loans</TabsTrigger>}
+                {visibleTabs.includes("core") && <TabsTrigger value='core'>Core Loans</TabsTrigger>}
+                {visibleTabs.includes("cleared") && <TabsTrigger value='cleared'>Cleared</TabsTrigger>}
               </TabsList>
             </div>
 
-            <TabsContent value='members' className='mt-4'>
-              <MembersTab />
-            </TabsContent>
-            <TabsContent value='quick' className='mt-4'>
-              <QuickLoansTab adminName={adminName} />
-            </TabsContent>
-            <TabsContent value='core' className='mt-4'>
-              <CoreLoansTab adminName={adminName} />
-            </TabsContent>
-            <TabsContent value='cleared' className='mt-4'>
-              <ClearedLoansTab />
-            </TabsContent>
+            {visibleTabs.includes("members") && (
+              <TabsContent value='members' className='mt-4'>
+                <MembersTab />
+              </TabsContent>
+            )}
+            {visibleTabs.includes("quick") && (
+              <TabsContent value='quick' className='mt-4'>
+                <QuickLoansTab adminName={adminName} canApprove={canApprove} />
+              </TabsContent>
+            )}
+            {visibleTabs.includes("core") && (
+              <TabsContent value='core' className='mt-4'>
+                <CoreLoansTab adminName={adminName} canApprove={canApprove} />
+              </TabsContent>
+            )}
+            {visibleTabs.includes("cleared") && (
+              <TabsContent value='cleared' className='mt-4'>
+                <ClearedLoansTab />
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </main>

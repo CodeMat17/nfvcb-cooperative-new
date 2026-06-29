@@ -10,6 +10,7 @@
 
 import type * as activityLogs from "../activityLogs.js";
 import type * as coreLoans from "../coreLoans.js";
+import type * as migrations from "../migrations.js";
 import type * as quickLoans from "../quickLoans.js";
 import type * as users from "../users.js";
 
@@ -22,6 +23,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   activityLogs: typeof activityLogs;
   coreLoans: typeof coreLoans;
+  migrations: typeof migrations;
   quickLoans: typeof quickLoans;
   users: typeof users;
 }>;

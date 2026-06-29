@@ -12,9 +12,10 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   if (!userId) return redirectToSignIn({ returnBackUrl: req.url });
 
   if (isAdminRoute(req)) {
+    const ADMIN_ROLES = ["super-admin", "members-admin", "quickloan-admin", "coreloan-admin"];
     const role = (sessionClaims?.metadata as { role?: string } | undefined)?.role;
 
-    if (role !== "admin") {
+    if (!role || !ADMIN_ROLES.includes(role)) {
       return NextResponse.redirect(new URL("/not-permitted", req.url));
     }
   }

@@ -53,10 +53,14 @@ import {
 
 interface CoreLoansTabProps {
   adminName: string;
+  canApprove?: boolean;
 }
 
-export function CoreLoansTab({ adminName }: CoreLoansTabProps) {
+const PAGE_SIZE = 20;
+
+export function CoreLoansTab({ adminName, canApprove = false }: CoreLoansTabProps) {
   const [search, setSearch] = useState("");
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [rejectTarget, setRejectTarget] = useState<Id<"coreLoans"> | null>(
     null
   );
@@ -150,7 +154,7 @@ export function CoreLoansTab({ adminName }: CoreLoansTabProps) {
           className="pl-9"
           placeholder="Search by member name…"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => { setSearch(e.target.value); setVisibleCount(PAGE_SIZE); }}
         />
       </div>
 
@@ -165,8 +169,9 @@ export function CoreLoansTab({ adminName }: CoreLoansTabProps) {
           No core loans found
         </p>
       ) : (
+        <>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-          {filtered.map((loan) => (
+          {filtered.slice(0, visibleCount).map((loan) => (
             <div
               key={loan._id}
               className="rounded-xl border bg-card p-4 space-y-3"
@@ -220,7 +225,7 @@ export function CoreLoansTab({ adminName }: CoreLoansTabProps) {
                 )}
               </div>
               <div className="flex gap-2 flex-wrap">
-                {loan.status === "awaiting-approval" && (
+                {canApprove && loan.status === "awaiting-approval" && (
                   <>
                     <Button
                       size="sm"
@@ -247,7 +252,7 @@ export function CoreLoansTab({ adminName }: CoreLoansTabProps) {
                     </Button>
                   </>
                 )}
-                {loan.status === "approved" && (
+                {canApprove && loan.status === "approved" && (
                   <Button
                     size="sm"
                     className="bg-emerald-600 hover:bg-emerald-700 text-white flex-1 sm:flex-none"
@@ -270,6 +275,14 @@ export function CoreLoansTab({ adminName }: CoreLoansTabProps) {
             </div>
           ))}
         </div>
+        {visibleCount < filtered.length && (
+          <div className="flex justify-center pt-2">
+            <Button variant="outline" onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}>
+              See More
+            </Button>
+          </div>
+        )}
+        </>
       )}
 
       {/* Approve Dialog */}

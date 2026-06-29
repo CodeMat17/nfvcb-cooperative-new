@@ -36,12 +36,16 @@ interface Action {
 
 interface QuickLoansTabProps {
   adminName: string;
+  canApprove?: boolean;
 }
 
-export function QuickLoansTab({ adminName }: QuickLoansTabProps) {
+const PAGE_SIZE = 20;
+
+export function QuickLoansTab({ adminName, canApprove = false }: QuickLoansTabProps) {
   const [search, setSearch] = useState("");
   const [action, setAction] = useState<Action | null>(null);
   const [loading, setLoading] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const loans = useQuery(api.quickLoans.getAllQuickLoans);
   const users = useQuery(api.users.getAllUsers);
@@ -93,7 +97,7 @@ export function QuickLoansTab({ adminName }: QuickLoansTabProps) {
           className="pl-9"
           placeholder="Search by member name…"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => { setSearch(e.target.value); setVisibleCount(PAGE_SIZE); }}
         />
       </div>
 
@@ -108,8 +112,9 @@ export function QuickLoansTab({ adminName }: QuickLoansTabProps) {
           No quick loans found
         </p>
       ) : (
+        <>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-          {filtered.map((loan) => (
+          {filtered.slice(0, visibleCount).map((loan) => (
             <div
               key={loan._id}
               className="rounded-xl border bg-card p-4 space-y-3"
@@ -168,60 +173,70 @@ export function QuickLoansTab({ adminName }: QuickLoansTabProps) {
                   </span>
                 )}
               </div>
-              <div className="flex gap-2 flex-wrap">
-                {loan.status === "awaiting-approval" && (
-                  <>
+              {canApprove && (
+                <div className="flex gap-2 flex-wrap">
+                  {loan.status === "awaiting-approval" && (
+                    <>
+                      <Button
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700 text-white flex-1 sm:flex-none"
+                        onClick={() =>
+                          setAction({
+                            type: "approve",
+                            loanId: loan._id,
+                            label: `Approve ₦${loan.amount.toLocaleString()} quick loan for ${usersMap[loan.userId]}?`,
+                          })
+                        }
+                      >
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="flex-1 sm:flex-none"
+                        onClick={() =>
+                          setAction({
+                            type: "reject",
+                            loanId: loan._id,
+                            label: `Reject quick loan for ${usersMap[loan.userId]}?`,
+                          })
+                        }
+                      >
+                        <XCircle className="w-3 h-3 mr-1" />
+                        Reject
+                      </Button>
+                    </>
+                  )}
+                  {loan.status === "approved" && (
                     <Button
                       size="sm"
-                      className="bg-green-600 hover:bg-green-700 text-white flex-1 sm:flex-none"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white flex-1 sm:flex-none"
                       onClick={() =>
                         setAction({
-                          type: "approve",
+                          type: "repaid",
                           loanId: loan._id,
-                          label: `Approve ₦${loan.amount.toLocaleString()} quick loan for ${usersMap[loan.userId]}?`,
+                          label: `Mark loan for ${usersMap[loan.userId]} as repaid?`,
                         })
                       }
                     >
-                      <CheckCircle className="w-3 h-3 mr-1" />
-                      Approve
+                      <BadgeCheck className="w-3 h-3 mr-1" />
+                      Mark Repaid
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      className="flex-1 sm:flex-none"
-                      onClick={() =>
-                        setAction({
-                          type: "reject",
-                          loanId: loan._id,
-                          label: `Reject quick loan for ${usersMap[loan.userId]}?`,
-                        })
-                      }
-                    >
-                      <XCircle className="w-3 h-3 mr-1" />
-                      Reject
-                    </Button>
-                  </>
-                )}
-                {loan.status === "approved" && (
-                  <Button
-                    size="sm"
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white flex-1 sm:flex-none"
-                    onClick={() =>
-                      setAction({
-                        type: "repaid",
-                        loanId: loan._id,
-                        label: `Mark loan for ${usersMap[loan.userId]} as repaid?`,
-                      })
-                    }
-                  >
-                    <BadgeCheck className="w-3 h-3 mr-1" />
-                    Mark Repaid
-                  </Button>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
+        {visibleCount < filtered.length && (
+          <div className="flex justify-center pt-2">
+            <Button variant="outline" onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}>
+              See More
+            </Button>
+          </div>
+        )}
+        </>
       )}
 
       <AlertDialog open={!!action} onOpenChange={() => setAction(null)}>

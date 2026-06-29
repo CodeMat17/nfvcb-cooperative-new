@@ -83,10 +83,10 @@ export default defineSchema({
     loanId: v.union(v.id("quickLoans"), v.id("coreLoans")),
     action: v.string(),
     status: v.union(
-      v.literal("processing"),
+      v.literal("awaiting-approval"),
       v.literal("approved"),
       v.literal("rejected"),
-      v.literal("cleared"),
+      v.literal("repaid"),
     ),
     date: v.string(),
     createdAt: v.number(),
@@ -101,8 +101,8 @@ export default defineSchema({
     approvedDate: v.optional(v.string()),
     dueDate: v.optional(v.string()),
     status: v.union(
-      v.literal("cleared"),
-      v.literal("processing"),
+      v.literal("repaid"),
+      v.literal("awaiting-approval"),
       v.literal("approved"),
     ),
     approvedBy: v.optional(v.string()),

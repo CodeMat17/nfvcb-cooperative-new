@@ -12,9 +12,12 @@ import { Search } from "lucide-react";
 
 type Filter = "all" | "quick" | "core";
 
+const PAGE_SIZE = 20;
+
 export function ClearedLoansTab() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const quickLoans = useQuery(api.quickLoans.getAllQuickLoans);
   const coreLoans = useQuery(api.coreLoans.getAllCoreLoans);
@@ -75,7 +78,7 @@ export function ClearedLoansTab() {
             className="pl-9"
             placeholder="Search by member name…"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setVisibleCount(PAGE_SIZE); }}
           />
         </div>
         <div className="flex gap-1.5">
@@ -89,7 +92,7 @@ export function ClearedLoansTab() {
                   ? "bg-green-600 hover:bg-green-700 text-white"
                   : ""
               }
-              onClick={() => setFilter(f)}
+              onClick={() => { setFilter(f); setVisibleCount(PAGE_SIZE); }}
             >
               {f.charAt(0).toUpperCase() + f.slice(1)}
             </Button>
@@ -108,8 +111,9 @@ export function ClearedLoansTab() {
           No cleared loans
         </p>
       ) : (
+        <>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-          {cleared.map((loan) => (
+          {cleared.slice(0, visibleCount).map((loan) => (
             <div
               key={loan.id}
               className="rounded-xl border bg-card p-4 space-y-3"
@@ -155,6 +159,14 @@ export function ClearedLoansTab() {
             </div>
           ))}
         </div>
+        {visibleCount < cleared.length && (
+          <div className="flex justify-center pt-2">
+            <Button variant="outline" onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}>
+              See More
+            </Button>
+          </div>
+        )}
+        </>
       )}
     </div>
   );
