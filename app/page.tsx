@@ -110,20 +110,7 @@ export default function HomePage() {
         <ThemeToggle />
       </div>
 
-      {/* Floating badge above card */}
-      <motion.div
-        initial={{ opacity: 0, y: -16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.1 }}
-        className="mb-6 z-10"
-      >
-        <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 shadow-sm">
-          <Sparkles className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
-          <span className="text-xs font-semibold text-green-700 dark:text-green-400 tracking-wide uppercase">
-            Staff Cooperative Society
-          </span>
-        </div>
-      </motion.div>
+     
 
       {/* Main card */}
       <motion.div
@@ -166,8 +153,8 @@ export default function HomePage() {
               transition={{ delay: 0.3, duration: 0.5 }}
               className="text-center mb-2"
             >
-              <h1 className="text-3xl font-bold tracking-tight shimmer-text">
-                NFVCB COOPERATIVE CONTRIBUTIONS APP
+              <h1 className="text-2xl font-bold tracking-tight shimmer-text">
+                NFVCB STAFF COOPERATIVE CONTRIBUTIONS APP
               </h1>
               <p className="text-muted-foreground text-sm mt-8">
                 Enter your 6-digit PIN to access your account
@@ -232,21 +219,7 @@ export default function HomePage() {
                 </Button>
               </motion.div>
 
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.55 }}
-                className="text-center text-sm text-muted-foreground"
-              >
-                Admin?{" "}
-                <button
-                  onClick={handleAdminClick}
-                  className="inline-flex items-center gap-1 text-green-600 dark:text-green-400 hover:text-green-700 font-semibold underline-offset-4 hover:underline transition-colors"
-                >
-                  <Shield className="w-3.5 h-3.5" />
-                  Sign in here
-                </button>
-              </motion.p>
+           
             </div>
           </div>
         </div>
@@ -259,7 +232,7 @@ export default function HomePage() {
         transition={{ delay: 0.7 }}
         className="mt-8 text-xs text-muted-foreground/60 z-10 text-center"
       >
-        National Film and Video Censors Board · Cooperative Society
+        National Film and Video Censors Board · Staff Cooperative Society
       </motion.p>
     </div>
   );
