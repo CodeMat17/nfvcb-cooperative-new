@@ -29,8 +29,6 @@ export function Navbar({ isAdmin, adminRole }: NavbarProps) {
 
       <div className='relative h-full flex items-center justify-between px-4 sm:px-6'>
         <Link href='/' className='flex items-center gap-2.5 group'>
-     
-
           <motion.div
             whileHover={{ scale: 1.08, rotate: 5 }}
             whileTap={{ scale: 0.95 }}
@@ -59,12 +57,12 @@ export function Navbar({ isAdmin, adminRole }: NavbarProps) {
           </div>
         </Link>
 
-        <div className="flex items-center gap-2">
+        <div className='flex items-center gap-2'>
           <ThemeToggle />
           {/* <Show when="signed-out">
             <SignInButton />         
           </Show> */}
-          <Show when="signed-in">
+          <Show when='signed-in'>
             <UserButton />
           </Show>
         </div>
