@@ -133,7 +133,7 @@ export function CoreLoanSection({ userId, hasActiveCoreAndQuick }: CoreLoanSecti
                 <div className='flex flex-col items-center gap-1 rounded-xl bg-teal-50 dark:bg-teal-900/20 border border-teal-100 dark:border-teal-900/40 p-2.5'>
                   <Percent className='w-3.5 h-3.5 text-teal-600 dark:text-teal-400' />
                   <span className='text-xs font-semibold text-teal-700 dark:text-teal-400 text-center leading-tight'>
-                    10% deducted
+                    8% / 10% deducted
                   </span>
                 </div>
                 <div className='flex flex-col items-center gap-1 rounded-xl bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-100 dark:border-cyan-900/40 p-2.5'>

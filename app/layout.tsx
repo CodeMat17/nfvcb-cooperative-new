@@ -24,7 +24,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: "NFVCB Staff Cooperative Society",
     description: "Cooperative Contribution Management App for NFVCB Staff",
-    images: [{ url: "/opengraph-image.jpg" }],
+    images: [{ url: "/opengraph-image-v2.jpg" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NFVCB Staff Cooperative Society",
+    description: "Cooperative Contribution Management App for NFVCB Staff",
+    images: ["/opengraph-image-v2.jpg"],
   },
   appleWebApp: {
     capable: true,
